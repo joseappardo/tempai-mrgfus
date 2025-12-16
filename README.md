@@ -75,11 +75,10 @@ conda activate tempai
 ```
 
 ### 3 Create Conda environment
-```bash
 Run the app
+```bash
 python tempai_advmodel_local.py
 ```
-
 The interface opens automatically at:
 http://127.0.0.1:7860
 
