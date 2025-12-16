@@ -1,0 +1,67 @@
+{
+  "dataset": {
+    "csv_path": "/Users/joseapineda/_CINAC/Projects/_fus_efficiency_skull/rawdata_062025/sonication_merged_subset_ml.csv",
+    "n_samples_after_qc": 2701,
+    "qc_filters": {
+      "logfit_r2_min": 0.75,
+      "logfit_acc_max": 7.5
+    }
+  },
+  "features": [
+    "actualpower",
+    "actualenergy",
+    "actualduration",
+    "elementson",
+    "skullarea",
+    "mean_sdr"
+  ],
+  "target": "maxavgtemp",
+  "cv": {
+    "type": "KFold",
+    "n_splits": 10,
+    "shuffle": true,
+    "random_state": 42
+  },
+  "models": {
+    "gbr": {
+      "model_file": "tempai_minimal_gbr.joblib",
+      "model_type": "GradientBoostingRegressor",
+      "params": {
+        "n_estimators": 400,
+        "learning_rate": 0.05,
+        "max_depth": 3,
+        "subsample": 0.9,
+        "random_state": 42,
+        "loss": "absolute_error"
+      },
+      "cv_mae": {
+        "global": 1.8723803280377218,
+        "<50": 1.893047521483091,
+        "50-55": 1.633445424045616,
+        "55-60": 1.7717576262746402,
+        ">=60": 5.286237457654391
+      }
+    },
+    "linreg": {
+      "model_file": "tempai_minimal_linreg.joblib",
+      "model_type": "LinearRegression",
+      "params": {
+        "fit_intercept": true
+      },
+      "cv_mae": {
+        "global": 2.3885128333376753,
+        "<50": 2.5000524320028337,
+        "50-55": 2.0601082914470927,
+        "55-60": 2.3405192878077115,
+        ">=60": 5.660092297685037
+      }
+    }
+  },
+  "versions": {
+    "python": "3.11.6",
+    "numpy": "1.26.4",
+    "pandas": "2.3.0",
+    "scikit_learn": "1.7.0",
+    "joblib": "1.3.2"
+  }
+}

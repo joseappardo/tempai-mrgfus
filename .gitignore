@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+.venv/
+venv/
+.env
+conda-env/
+
+# Logs & outputs
+treatmentlogs/
+*.csv
+*.png
+
+# Models (not versioned)
+models/*.joblib
+models/*.pkl
+
+# OS
+.DS_Store
