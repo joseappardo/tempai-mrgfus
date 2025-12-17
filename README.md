@@ -85,12 +85,6 @@ http://127.0.0.1:7860
 ## Output Files
 
 On exit, the application saves:
-treatmentlogs/sonication_log_YYYYMMDD_HHMMSS.csv
-treatmentlogs/sonication_summary_YYYYMMDD_HHMMSS.png
-
-## Output Files
-
-On exit, the application saves:
 
 - treatmentlogs/sonication_log_YYYYMMDD_HHMMSS.csv  
 - treatmentlogs/sonication_summary_YYYYMMDD_HHMMSS.png
@@ -115,58 +109,3 @@ Roadmap: Model refinement, uncertainty estimation, prospective validation
 
 Jose Angel Pineda Pardo  
 Researcher — Neuroimaging & Therapeutic Ultrasound  
-
-## License
-
-Research & Clinical Decision Support License  
-See LICENSE for full terms.
-
----
-
-## Wiki
-
-In GitHub → Wiki, create the following pages:
-
-### Home
-- Project overview
-- Intended use
-- High-level architecture
-
-### Modeling
-- Features
-- Model choice
-- Error behavior by temperature range
-
-### Inverse Planning
-- Why bisection
-- Why not linear interpolation
-- Safety bounds
-- NA conditions
-
-### Visualization
-- Trajectories
-- Log-fit vs raw model
-- Interpretation guidelines
-
-### Clinical Safety
-- Decision support philosophy
-- Known limitations
-- Non-validation statement
-
----
-
-## CI (Continuous Integration)
-
-CI verifies that the repository is in a consistent and runnable state.
-
-It performs:
-- Basic import checks
-- Syntax validation
-- Automatic execution on push and pull requests
-
-### Create CI structure
-
-```bash
-mkdir -p .github/workflows
-touch .github/workflows/ci.yml
-```
