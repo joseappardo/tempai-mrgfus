@@ -10,8 +10,8 @@ from scipy.optimize import curve_fit
 # -----------------------
 # Load models
 # -----------------------
-MODEL_PATH_NL = "./models/tempai_minimal_gbr.joblib"
-MODEL_PATH_LIN = "./models/tempai_minimal_linreg.joblib"
+MODEL_PATH_NL = "../models/tempai_minimal_gbr.joblib"
+MODEL_PATH_LIN = "../models/tempai_minimal_linreg.joblib"
 
 model_nl = joblib.load(MODEL_PATH_NL)
 model_lin = joblib.load(MODEL_PATH_LIN)
