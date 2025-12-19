@@ -83,7 +83,6 @@ def target_planner(selected_model, skullarea, mean_sdr, elementson,
                    target_temp, duration_s, power_w, fix_duration, fix_power):
     model = _select_model(selected_model)
 
-    # parse robusto (porque duration/power son Textbox)
     def _to_float(x, default):
         try:
             if x is None:
@@ -103,19 +102,35 @@ def target_planner(selected_model, skullarea, mean_sdr, elementson,
     if fix_power:
         fix_duration = False
     if (not fix_duration) and (not fix_power):
-        fix_duration = True  # default lógico
+        fix_duration = True  # default
 
+    # helper msg (HTML rojo)
+    def _red(msg: str) -> str:
+        if not msg:
+            return ""
+        return (
+            "<div style='margin-top:6px; padding:8px 10px; border-radius:8px; "
+            "background: rgba(255,0,0,0.10); border: 1px solid rgba(255,0,0,0.35); "
+            "color:#ff4d4d; font-weight:700;'>"
+            f"{msg}"
+            "</div>"
+        )
+
+    # FIX DURATION -> solve POWER
     if fix_duration:
         p_req = _solve_power_for_target(model, T, D, skullarea, mean_sdr, elementson)
         if p_req is None:
-            return f"{D:.1f}", "NA"
-        return f"{D:.1f}", f"{p_req:.1f}"
+            # duration se mantiene, power queda vacío, msg rojo
+            return int(round(D)), None, _red("Power out of range!")
+        return int(round(D)), int(round(p_req)), ""
 
-    # fix_power
+    # FIX POWER -> solve DURATION
     d_req = _solve_duration_for_target(model, T, P, skullarea, mean_sdr, elementson)
     if d_req is None:
-        return "NA", f"{P:.1f}"
-    return f"{d_req:.2f}", f"{P:.1f}"
+        # power se mantiene, duration queda vacío, msg rojo
+        return None, int(round(P)), _red("Duration out of range!")
+    return int(round(d_req)), int(round(P)), ""
+
 
 def _predict_temp_for(model, power_w, duration_s, skullarea, mean_sdr, elementson):
     e_kj = calculate_energy_kj(power_w, duration_s)
@@ -569,7 +584,7 @@ with gr.Blocks(theme=theme, title="MRgFUS TempAI v0.1-beta") as iface:
             gr.Button("⛔ Save & Exit", variant="stop").click(fn=exit_app, inputs=[log_state], outputs=None)
 
         with gr.Column(scale=6):
-            gr.Markdown("<h2 style='text-align: center; font-size: 30px;'>MRgFUS TempAI Model01 (Local)</h2>")
+            gr.Markdown("<h2 style='text-align: center; font-size: 30px;'>MRgFUS TempAI v0.3-beta</h2>")
 
     with gr.Row():
         with gr.Column(scale=1):
@@ -591,10 +606,10 @@ with gr.Blocks(theme=theme, title="MRgFUS TempAI v0.1-beta") as iface:
                 label="Trajectories"
             )
 
-            actualpower = gr.Number(label="Power (W)", precision=1, value=200)
-            actualduration = gr.Number(label="Duration (s)", precision=1, value=10)
+            actualpower = gr.Number(label="Power (W)", precision=0, value=200)
+            actualduration = gr.Number(label="Duration (s)", precision=0, value=10)
 
-            skullarea = gr.Number(label="Skull Area", precision=2, value=336)
+            skullarea = gr.Number(label="Skull Area", precision=0, value=336)
             mean_sdr = gr.Number(label="Mean SDR", precision=3, value=0.57)
             elementson = gr.Number(label="N Elements", precision=0, value=986)
 
@@ -616,17 +631,21 @@ with gr.Blocks(theme=theme, title="MRgFUS TempAI v0.1-beta") as iface:
             
                 with gr.Row():
                     with gr.Column(scale=1):
-                        target_temp = gr.Number(label="Target Peak Avg Temp (°C)", precision=1, value=55.0)
-            
+                        with gr.Row():
+                            target_temp = gr.Number(label="Target Peak Avg Temp (°C)", precision=1, value=55.0)
+                        with gr.Row():
+                            planner_msg = gr.HTML(value="")
+                    
                     with gr.Column(scale=2):
                         with gr.Row():
                             fix_duration = gr.Checkbox(label="Fix duration", value=True)
                             fix_power = gr.Checkbox(label="Fix power", value=False)
             
                         with gr.Row():
-                            target_duration = gr.Textbox(label="Duration (s)", value="11.0")
-                            target_power = gr.Textbox(label="Power (W)", value="800.0")
-           
+                            target_duration = gr.Number(label="Duration (s)", precision=0, value=11)
+                            target_power = gr.Number(label="Power (W)", precision=0, value=800)
+
+
     with gr.Row():
         with gr.Column(scale=2):
             son_table = gr.Dataframe(label="Sonication Log", interactive=False)
@@ -680,9 +699,10 @@ with gr.Blocks(theme=theme, title="MRgFUS TempAI v0.1-beta") as iface:
         c.input(
             fn=target_planner,
             inputs=planner_inputs,
-            outputs=[target_duration, target_power],
+            outputs=[target_duration, target_power, planner_msg],
             trigger_mode="always_last"
         )
+
 
 
     # Set sonication: usa valores actuales + temp real
@@ -705,7 +725,7 @@ with gr.Blocks(theme=theme, title="MRgFUS TempAI v0.1-beta") as iface:
             *make_plot_and_table(sm, sa, sdr, ne, xmode, smode),
             _empty_log_df(),
             _sonication_plot(_empty_log_df()),
-            *target_planner(sm, sa, sdr, ne, 55.0, "11.0", "800.0", True, False),
+            *target_planner(sm, sa, sdr, ne, 55.0, 11, 800, True, False),
             True,  # fix_duration
             False  # fix_power
         ),
@@ -714,7 +734,7 @@ with gr.Blocks(theme=theme, title="MRgFUS TempAI v0.1-beta") as iface:
             output_html, params_html, peak_real_temp,
             plot_output, table_output,
             son_table, son_plot,
-            target_duration, target_power, fix_duration, fix_power
+            target_duration, target_power, planner_msg, fix_duration, fix_power
         ]
     )
 
